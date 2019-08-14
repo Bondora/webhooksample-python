@@ -1,0 +1,6 @@
+__pycache__/
+data/
+venv/
+.vscode/
+
+app.cfg
