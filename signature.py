@@ -7,12 +7,13 @@ import re
 
 from email.utils import parsedate_to_datetime
 from datetime import datetime, timezone
+from flask import Request
 
 class SignatureException(Exception):
     """HTTP signature is not valid"""
 
 
-def _get_digest(req):
+def _get_digest(req: Request) -> str:
     digest = req.headers['Digest']
     requesthash = re.match('^SHA-256=(.+)', digest)[1]
     datahash = base64.b64encode(hashlib.sha256(req.data).digest()).decode()
@@ -21,11 +22,11 @@ def _get_digest(req):
     return "SHA-256=" + datahash
 
 
-def _parse_signature_header(signature_header):
+def _parse_signature_header(signature_header: str) -> dict[str, str]:
     matches = re.findall('(keyId|algorithm|headers|signature)="([^"]*)",?', signature_header)
     return {m[0]: m[1] for m in matches}
 
-def _get_sign_string(req, headers, host, pathandquery):
+def _get_sign_string(req: Request, headers: list[str], host: str, pathandquery: str):
     values = {
         '(request-target)': "{} {}".format(req.method.lower(), pathandquery),
         'host': host,
@@ -41,8 +42,8 @@ def _get_sign_string(req, headers, host, pathandquery):
 
     return sign_string
 
-def validate_signature(req, keys, host=None, pathandquery=None, max_allowed_time=60):
-    """Validated HTTP signature using request."""
+def validate_signature(req: Request, keys: dict[str, str], host: str = None, pathandquery: str = None, max_allowed_time: float = 60) -> None:
+    """Validate HTTP signature using request."""
     
     if host is None:
         host = req.headers['Host']
