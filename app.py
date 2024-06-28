@@ -7,7 +7,7 @@ from signature import validate_signature
 app = Flask(__name__)
 app.config.from_pyfile('app.cfg')
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 def ping():
     return 'OK'
 
